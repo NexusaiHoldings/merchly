@@ -1,0 +1,18 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  // Lego packages ship TS/TSX source (no build step) — Next must transpile
+  // the ones whose UI components we render in the app (admin-console).
+  transpilePackages: ["@nexus/admin-console"],
+  experimental: {
+    typedRoutes: false,
+    // `pg` ships Node-built-in deps (net/tls/pg-native) webpack can't bundle.
+    // Externalizing keeps it out of the webpack bundle AND makes Next include
+    // it in the serverless function's node_modules so route handlers can
+    // require("pg") at runtime. Without this, the auth routes threw
+    // "Cannot find module 'pg'" → caught by the lego as 500 "internal error".
+    serverComponentsExternalPackages: ["pg"],
+  },
+};
+
+module.exports = nextConfig;
