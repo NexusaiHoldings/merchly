@@ -25,6 +25,7 @@
 
 import type { HandlerContext, HandlerResult } from "@nexus/identity-and-access";
 import { handleExecuteChannelAction } from "./execute_channel_action";
+import { handleSyncInventoryAcrossChannels } from "./sync_inventory_across_channels";
 
 type Args = Record<string, unknown>;
 
@@ -33,4 +34,5 @@ export const DOMAIN_DISPATCH: Record<
   (ctx: HandlerContext, args: Args) => Promise<HandlerResult>
 > = {
   execute_channel_action: (ctx, a) => handleExecuteChannelAction(ctx, a),
+  sync_inventory_across_channels: (ctx, a) => handleSyncInventoryAcrossChannels(ctx, a),
 };
