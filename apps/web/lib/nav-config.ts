@@ -1,67 +1,44 @@
-const channelsNavItem = {
-  name: "Channels",
-  title: "Channels",
-  label: "Channels",
-  href: "/channels",
-  description: "Manage storefront and marketplace channel connections.",
+export type NavLink = {
+  href: string;
+  label: string;
 };
 
-const skillsNavItem = {
-  name: "Skills",
-  title: "Skills",
-  label: "Skills",
-  href: "/skills",
-  description: "Review and configure autonomous commerce skills.",
+export type NavGroup = {
+  id: string;
+  label: string;
+  links: NavLink[];
 };
 
-const scheduleNavItem = {
-  name: "Schedule",
-  title: "Schedule",
-  label: "Schedule",
-  href: "/schedule",
-  description: "Coordinate cadence execution across connected channels.",
+export type NavConfig = {
+  primary: NavLink[];
+  groups: NavGroup[];
 };
 
-const actionsNavItem = {
-  name: "Actions",
-  title: "Actions",
-  label: "Actions",
-  href: "/actions",
-  description: "Audit the autonomous actions executed across skills.",
-};
-
-const skillConfigNavItem = {
-  name: "Skill Config",
-  title: "Skill Config",
-  label: "Skill Config",
-  href: "/admin/skill-config",
-  description: "Tune skill-level parameters and guardrails.",
-};
-
-export const NAV_CONFIG = {
+export const NAV_CONFIG: NavConfig = {
   primary: [
-    channelsNavItem,
-    skillsNavItem,
-    scheduleNavItem,
-    actionsNavItem,
-    skillConfigNavItem,
+    { href: "/", label: "Home" },
+    { href: "/channels", label: "Channels" },
+    { href: "/skills", label: "Skills" },
+    { href: "/schedule", label: "Schedule" },
+    { href: "/actions", label: "Actions" },
   ],
   groups: [
     {
-      name: "Operations",
-      title: "Operations",
+      id: "operations",
       label: "Operations",
-      description: "Daily execution surfaces for the operations team.",
-      items: [skillsNavItem, scheduleNavItem, actionsNavItem],
-      links: [skillsNavItem, scheduleNavItem, actionsNavItem],
+      links: [
+        { href: "/channels", label: "Channels" },
+        { href: "/skills", label: "Skills" },
+        { href: "/schedule", label: "Schedule" },
+        { href: "/actions", label: "Actions" },
+      ],
     },
     {
-      name: "Administration",
-      title: "Administration",
+      id: "administration",
       label: "Administration",
-      description: "Configuration surfaces for administrators.",
-      items: [channelsNavItem, skillConfigNavItem],
-      links: [channelsNavItem, skillConfigNavItem],
+      links: [{ href: "/admin/skill-config", label: "Skill Config" }],
     },
   ],
-} as const;
+};
+
+export default NAV_CONFIG;
