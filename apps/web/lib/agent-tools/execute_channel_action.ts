@@ -84,16 +84,17 @@ async function verifyConfirmationToken(
   actionId: string,
   confirmationToken: string
 ): Promise<boolean> {
-  const row = await ctx.db.queryRow<{ confirmation_token: string; consumed: boolean }>(
+  const rows = await ctx.db.query<{ confirmation_token: string; consumed: boolean }>(
     `SELECT confirmation_token, consumed
      FROM agent_action_confirmations
      WHERE action_id = $1
        AND consumed = false
        AND expires_at > NOW()
      LIMIT 1`,
-    [actionId]
+    actionId
   );
 
+  const row = rows[0];
   if (!row) return false;
   return row.confirmation_token === confirmationToken;
 }
@@ -106,7 +107,7 @@ async function markConfirmationConsumed(
     `UPDATE agent_action_confirmations
      SET consumed = true, consumed_at = NOW()
      WHERE action_id = $1`,
-    [actionId]
+    actionId
   );
 }
 
@@ -116,7 +117,7 @@ async function fetchBeforeState(
   actionType: ActionType,
   targetId: string
 ): Promise<Record<string, unknown> | null> {
-  const row = await ctx.db.queryRow<{ snapshot: Record<string, unknown> }>(
+  const rows = await ctx.db.query<{ snapshot: Record<string, unknown> }>(
     `SELECT snapshot
      FROM channel_resource_snapshots
      WHERE channel = $1
@@ -124,9 +125,11 @@ async function fetchBeforeState(
        AND target_id = $3
      ORDER BY snapshotted_at DESC
      LIMIT 1`,
-    [channel, actionType, targetId]
+    channel,
+    actionType,
+    targetId
   );
-  return row?.snapshot ?? null;
+  return rows[0]?.snapshot ?? null;
 }
 
 async function dispatchToChannelBridge(
@@ -183,17 +186,15 @@ async function recordActionLog(
            after_state  = EXCLUDED.after_state,
            error_message = EXCLUDED.error_message,
            executed_at  = EXCLUDED.executed_at`,
-    [
-      entry.action_id,
-      entry.channel,
-      entry.action_type,
-      entry.target_id,
-      entry.before_state ? JSON.stringify(entry.before_state) : null,
-      JSON.stringify(entry.after_state),
-      entry.status,
-      entry.error_message,
-      entry.executed_at,
-    ]
+    entry.action_id,
+    entry.channel,
+    entry.action_type,
+    entry.target_id,
+    entry.before_state ? JSON.stringify(entry.before_state) : null,
+    JSON.stringify(entry.after_state),
+    entry.status,
+    entry.error_message,
+    entry.executed_at
   );
 }
 
