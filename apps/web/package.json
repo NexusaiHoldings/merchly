@@ -20,6 +20,9 @@
     "@types/pg": "^8.11.0",
     "pg": "^8.11.0",
     "@nexus/identity-and-access": "*",
+    "@nexus/legal-and-compliance": "*",
+    "@nexus/notifications": "*",
+    "@nexus/billing-and-subscriptions": "*",
     "@nexus/admin-console": "*",
     "@nexus/support-and-help": "*",
     "@nexus/crm-and-lifecycle": "*",
@@ -29,7 +32,6 @@
     "@nexus/files-and-media": "*",
     "@nexus/developer-surface": "*",
     "@nexus/social-and-engagement": "*",
-    "@nexus-substrate/runtime-client": "*",
-    "@nexus/legal-and-compliance": "*"
+    "@nexus-substrate/runtime-client": "*"
   }
 }
