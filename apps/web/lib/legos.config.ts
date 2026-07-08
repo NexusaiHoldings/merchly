@@ -63,6 +63,26 @@ export const LEGOS: readonly LegoConfig[] = [
   },
   {
     "config": {
+      "tier_ladder": [
+        {
+          "name": "Starter",
+          "price_id": "price_1Tek896WMeYkDDIuTohGBdSh",
+          "amount": 4900,
+          "interval": "month"
+        },
+        {
+          "name": "Growth",
+          "price_id": "price_1Tek896WMeYkDDIugX6MIXlD",
+          "amount": 14900,
+          "interval": "month"
+        },
+        {
+          "name": "Scale",
+          "price_id": "price_1Tek896WMeYkDDIuAH47GkrM",
+          "amount": 39900,
+          "interval": "month"
+        }
+      ],
       "default_currency": "usd",
       "enable_proration": true,
       "trial_days": 0
