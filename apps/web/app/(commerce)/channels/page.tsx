@@ -158,8 +158,39 @@ export default async function ChannelsPage(): Promise<JSX.Element> {
       </div>
 
       {healthList.length === 0 && (
-        <div style={{ textAlign: "center", color: "#6b7280", padding: "60px 0" }}>
-          No channels configured.
+        // Defensive fallback: getAllChannelHealth drops connectors whose
+        // health check throws, so if everything fails we still give the
+        // user a way forward instead of a dead end (QA-flagged).
+        <div
+          style={{
+            textAlign: "center",
+            padding: "48px 24px",
+            border: "1px dashed #cbd5e1",
+            borderRadius: 8,
+            background: "#f8fafc",
+          }}
+        >
+          <p style={{ fontWeight: 600, color: "#0f172a", marginTop: 0 }}>
+            Connect your first sales channel
+          </p>
+          <p style={{ color: "#475569", maxWidth: 420, margin: "0 auto 20px" }}>
+            Merchly monitors sync health, pricing, and listings across your channels. Start by
+            connecting the platform you sell on.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <a
+              href="/channels/connect/shopify"
+              style={{ padding: "8px 16px", background: "#2563eb", color: "#ffffff", borderRadius: 6, textDecoration: "none", fontSize: 14, fontWeight: 600 }}
+            >
+              Connect Shopify
+            </a>
+            <a
+              href="/channels/connect/amazon"
+              style={{ padding: "8px 16px", background: "#2563eb", color: "#ffffff", borderRadius: 6, textDecoration: "none", fontSize: 14, fontWeight: 600 }}
+            >
+              Connect Amazon
+            </a>
+          </div>
         </div>
       )}
     </main>
