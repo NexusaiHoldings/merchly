@@ -10,6 +10,7 @@
 // ── handlers ──
 export {
   handleListDocuments,
+  handleListAllDocuments,
   handleGetDocument,
   handlePublishDocument,
 } from "./api/documents";

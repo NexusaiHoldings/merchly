@@ -95,6 +95,51 @@ export async function handleListDocuments({
   }
 }
 
+// ── handler: list ALL document versions (admin) ────────────────────────────
+
+export interface ListAllDocumentsInput {
+  readonly query: { doc_type?: string; jurisdiction?: string };
+  readonly ctx: HandlerContext;
+}
+
+/**
+ * Admin: list EVERY version of every legal document (not just the
+ * currently-effective one that handleListDocuments returns), newest first, so
+ * the admin Legal page can show full version history per doc_type. Optional
+ * doc_type / jurisdiction filters. content_html is omitted from the list to keep
+ * the payload light — fetch a single doc via handleGetDocument for the body.
+ */
+export async function handleListAllDocuments({
+  query,
+  ctx,
+}: ListAllDocumentsInput): Promise<HandlerResult> {
+  const where: string[] = [];
+  const params: unknown[] = [];
+  if (query.doc_type) {
+    params.push(query.doc_type);
+    where.push(`doc_type = $${params.length}`);
+  }
+  if (query.jurisdiction) {
+    params.push(query.jurisdiction);
+    where.push(`jurisdiction = $${params.length}`);
+  }
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+  try {
+    const rows = await ctx.db.query<Omit<DocRow, "content_html">>(
+      "SELECT id, doc_type, version, jurisdiction, content_summary, " +
+        "effective_at, published_by, created_at, " +
+        "(effective_at <= NOW()) AS is_effective " +
+        `FROM legal_documents ${whereSql} ` +
+        "ORDER BY doc_type, jurisdiction, effective_at DESC",
+      ...params,
+    );
+    return ok({ documents: rows });
+  } catch {
+    return err(500, "internal error");
+  }
+}
+
 // ── handler: get one document ──────────────────────────────────────────────
 
 export interface GetDocumentInput {

@@ -108,6 +108,95 @@ export async function handleCancelSubscription({
   });
 }
 
+// ── handler: list all subscriptions (admin) ────────────────────────────────
+
+interface AdminSubRow {
+  id: string;
+  stripe_subscription_id: string;
+  tier_name: string;
+  status: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  trial_end: string | null;
+  created_at: string;
+  user_id: string;
+  email: string;
+  stripe_customer_id: string;
+}
+
+export interface ListSubscriptionsInput {
+  readonly query: { status?: string; tier?: string; limit?: number; offset?: number };
+  readonly ctx: HandlerContext;
+}
+
+/**
+ * Admin: list every subscription across all customers, with the customer's
+ * email and tier. Optional status / tier filters, paginated. Returns counts by
+ * status and active-tier so the admin page can show a portfolio-level summary.
+ * Read-only — no Stripe call (webhook is the source of truth for local state).
+ */
+export async function handleListSubscriptions({
+  query,
+  ctx,
+}: ListSubscriptionsInput): Promise<HandlerResult> {
+  const limit = Math.min(Math.max(Number(query.limit) || 200, 1), 1000);
+  const offset = Math.max(Number(query.offset) || 0, 0);
+
+  // Build the WHERE clause from value-bound filters (never identifiers).
+  const where: string[] = [];
+  const params: unknown[] = [];
+  if (query.status) {
+    params.push(query.status);
+    where.push(`s.status = $${params.length}`);
+  }
+  if (query.tier) {
+    params.push(query.tier);
+    where.push(`s.tier_name = $${params.length}`);
+  }
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+  try {
+    params.push(limit);
+    const limitIdx = params.length;
+    params.push(offset);
+    const offsetIdx = params.length;
+
+    const rows = await ctx.db.query<AdminSubRow>(
+      "SELECT s.id, s.stripe_subscription_id, s.tier_name, s.status, " +
+        "s.current_period_start, s.current_period_end, s.cancel_at_period_end, " +
+        "s.trial_end, s.created_at, c.user_id, c.email, c.stripe_customer_id " +
+        "FROM billing_subscriptions s " +
+        "JOIN billing_customers c ON c.id = s.customer_id " +
+        `${whereSql} ORDER BY s.created_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      ...params,
+    );
+
+    const byStatus = await ctx.db.query<{ status: string; n: string }>(
+      "SELECT status, COUNT(*)::text AS n FROM billing_subscriptions GROUP BY status",
+    );
+    const byTier = await ctx.db.query<{ tier_name: string; n: string }>(
+      "SELECT tier_name, COUNT(*)::text AS n FROM billing_subscriptions " +
+        "WHERE status IN ('trialing', 'active', 'past_due') GROUP BY tier_name",
+    );
+
+    const totalRow = await ctx.db.query<{ n: string }>(
+      "SELECT COUNT(*)::text AS n FROM billing_subscriptions",
+    );
+
+    return ok({
+      subscriptions: rows,
+      total: Number(totalRow[0]?.n || 0),
+      by_status: Object.fromEntries(byStatus.map((r) => [r.status, Number(r.n)])),
+      by_active_tier: Object.fromEntries(byTier.map((r) => [r.tier_name, Number(r.n)])),
+      limit,
+      offset,
+    });
+  } catch {
+    return err(500, "internal error");
+  }
+}
+
 export async function handleResumeSubscription({
   userId,
   ctx,

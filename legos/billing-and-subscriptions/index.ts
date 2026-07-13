@@ -17,6 +17,7 @@ export {
   handleGetSubscription,
   handleCancelSubscription,
   handleResumeSubscription,
+  handleListSubscriptions,
 } from "./api/subscriptions";
 export { handlePortal } from "./api/portal";
 export {
